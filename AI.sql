@@ -1,7 +1,7 @@
 create database AI
 
 use AI 
-
+drop database AI
 
 CREATE TABLE [Categories] (
   [CategoryID] INT IDENTITY(1,1) PRIMARY KEY,
@@ -71,6 +71,50 @@ CREATE TABLE [AITraining] (
   FOREIGN KEY ([ProductBaseID]) REFERENCES [ProductBase]([ProductBaseID]),
   FOREIGN KEY ([VariantID]) REFERENCES [ProductVariants]([VariantID])
 );
+
+INSERT INTO Brands (BrandName, IsActive) VALUES
+(N'Apple', 1),
+(N'samsung', 1),
+(N'xiaomi', 1);
+
+INSERT INTO Categories (CategoryName, ParentCategoryID, IsActive) VALUES
+(N'điện thoại', NULL, 1),
+(N'android', 2, 1),
+(N'iphone', 2, 1),
+(N'tablet', NULL, 1),
+(N'New Category', NULL, 1),
+(N'New Category', NULL, 1),
+(N'New Category', NULL, 1),
+(N'New Category', NULL, 1);
+
+INSERT INTO ProductBase (ProductName, CategoryID, BrandID, Description, Specifications, IsActive) VALUES
+(N'iphone 15', 2, 1, N'chụp ảnh đẹp, hiệu năng cao , xu hướng', N'giới trẻ ưa thích', 1),
+(N'iphone 15 pro max', 2, 1, N'nặng , hiệu năng cao , sản phẩm được giới trẻ sử dụng nhiều và chụp ảnh đẹp', N'giới trẻ yêu thích nhất', 1),
+(N'iphone 16', 4, 1, NULL, NULL, 1),
+(N'iphone 15 pro', 2, 1, NULL, NULL, 1),
+(N'iphone 14 pro max', 4, 1, N'giá cả phù hợp , độ phân giải 48mp', N'phù hợp cho người thích chụp ảnh', 1);
+
+
+
+INSERT INTO [AI].[dbo].[ProductVariants] (
+    ProductBaseID,
+    Color,
+    RAM,
+    ROM,
+    SKU,
+    Price,
+    StockQuantity,
+    ImageURLs,
+    IsActive
+)
+VALUES
+(1, N'xanh', 16, 64, N'0', 20000000.00, 0, N'https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/i/p/iphone-16-1.png', 1),
+(1, N'titan trắng', 16, 128, N'2', 12000000.00, 2, N'https://didongxanh.com.vn/_next/image?url=https%3A%2F%2Fdidongxanh.com.vn%2Fwp-content%2Fuploads%2F2024%2F05%2Fiphone-15-pro-max-titan-1.png&w=256&q=75', 1),
+(2, N'trắng', 32, 256, N'8', 27000000.00, 15, N'https://didongxanh.com.vn/_next/image?url=https%3A%2F%2Fdidongxanh.com.vn%2Fwp-content%2Fuploads%2F2024%2F05%2Fiphone-15-pro-max-trang-1-1.png&w=640&q=75', 1),
+(5, N'tím', 8, 512, N'22', 30000000.00, 10, N'https://didongxanh.com.vn/_next/image?url=https%3A%2F%2Fdidongxanh.com.vn%2Fwp-content%2Fuploads%2F2024%2F05%2F3-2.jpg&w=256&q=75', 1);
+
+
+
 
 CREATE TRIGGER trg_Insert_AITraining
 ON ProductVariants

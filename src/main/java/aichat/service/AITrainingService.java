@@ -4,8 +4,9 @@
  */
 package aichat.service;
 
-
 import aichat.dao.AITrainingDAO;
+import aichat.models.AITraining;
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,16 +56,7 @@ public class AITrainingService {
         }
     }
 
-    public List<String> getAllRamValues() {
-        try {
-            return trainingDAO.getAllRamValues();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return Collections.emptyList();
-        }
-    }
-
-    public List<String> getAllRomValues() {
+    public List<Integer> getAllRomValues() {
         try {
             return trainingDAO.getAllRomValues();
         } catch (SQLException e) {
@@ -73,7 +65,7 @@ public class AITrainingService {
         }
     }
 
-    public List<String> getAllPrices() {
+    public List<BigDecimal> getAllPrices() {
         try {
             return trainingDAO.getAllPrices();
         } catch (SQLException e) {
@@ -100,26 +92,35 @@ public class AITrainingService {
         }
     }
 
-    // Gộp hết lại nếu bạn cần dùng để feed vô AI hay training
-    public List<String> getAllTrainingText() {
-        List<String> combined = new ArrayList<>();
-        combined.addAll(getAllProductNames());
-        combined.addAll(getAllBrandNames());
-        combined.addAll(getAllCategoryNames());
-        combined.addAll(getAllColors());
-        combined.addAll(getAllRamValues());
-        combined.addAll(getAllRomValues());
-        combined.addAll(getAllPrices());
-        combined.addAll(getAllSpecifications());
-        combined.addAll(getAllDescriptions());
-        return combined;
+    public List<AITraining> getAllTrainings() {
+        try {
+            return trainingDAO.getAllTrainings();
+        } catch (SQLException e) {
+            e.printStackTrace(); // hoặc log lỗi bằng Logger nếu bạn dùng log4j/slf4j
+            return List.of(); // trả về list rỗng nếu lỗi
+        }
     }
+
+//    // Gộp hết lại nếu bạn cần dùng để feed vô AI hay training
+//    public List<String> getAllTrainingText() {
+//        List<String> combined = new ArrayList<>();
+//        combined.addAll(getAllProductNames());
+//        combined.addAll(getAllBrandNames());
+//        combined.addAll(getAllCategoryNames());
+//        combined.addAll(getAllColors());
+//        combined.addAll(getAllRomValues());
+//        combined.addAll(getAllPrices());
+//        combined.addAll(getAllSpecifications());
+//        combined.addAll(getAllDescriptions());
+//        return combined;
+//    }
+
     public static void main(String[] args) {
         AITrainingService aITrainingService = new AITrainingService();
-       List<String>Name = aITrainingService.getAllProductNames();
-        for (String name : Name) {
+        List<AITraining> Name = aITrainingService.getAllTrainings();
+        for (AITraining name : Name) {
             System.out.println(name.toString());
         }
-        
+
     }
 }

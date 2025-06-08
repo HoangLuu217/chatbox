@@ -11,7 +11,6 @@ public class AITraining {
     private String brandName;
     private String categoryName;
     private String color;
-    private Integer ram;
     private Integer rom;
     private BigDecimal price;
     private String specifications;
@@ -21,6 +20,21 @@ public class AITraining {
 
     public AITraining(String productName) {
         this.productName = productName;
+    }
+
+    public AITraining(int trainingId, int productBaseId, int variantId, String productName, String brandName, String categoryName, String color, Integer rom, BigDecimal price, String specifications, String description, boolean isActive) {
+        this.trainingId = trainingId;
+        this.productBaseId = productBaseId;
+        this.variantId = variantId;
+        this.productName = productName;
+        this.brandName = brandName;
+        this.categoryName = categoryName;
+        this.color = color;
+        this.rom = rom;
+        this.price = price;
+        this.specifications = specifications;
+        this.description = description;
+        this.isActive = isActive;
     }
 
     
@@ -99,14 +113,6 @@ public class AITraining {
         this.color = color;
     }
     
-    public Integer getRam() {
-        return ram;
-    }
-    
-    public void setRam(Integer ram) {
-        this.ram = ram;
-    }
-    
     public Integer getRom() {
         return rom;
     }
@@ -150,7 +156,6 @@ public class AITraining {
                 ", brandName='" + brandName + '\'' +
                 ", categoryName='" + categoryName + '\'' +
                 ", color='" + color + '\'' +
-                ", ram=" + ram +
                 ", rom=" + rom +
                 ", price=" + price +
                 ", isActive=" + isActive +

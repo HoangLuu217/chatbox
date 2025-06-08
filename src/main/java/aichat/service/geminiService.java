@@ -96,59 +96,8 @@ public class geminiService {
         }
     }
 
-//public String callGeminiAPI(String prompt) throws Exception {
-//    HttpClient client = HttpClient.newHttpClient();
-//
-//    JSONObject requestBody = new JSONObject();
-//    JSONArray contents = new JSONArray();
-//    JSONObject content = new JSONObject();
-//    JSONArray parts = new JSONArray();
-//    JSONObject part = new JSONObject();
-//
-//    part.put("text", prompt);
-//    parts.put(part);
-//    content.put("parts", parts);
-//    contents.put(content);
-//    requestBody.put("contents", contents);
-//
-//    HttpRequest request = HttpRequest.newBuilder()
-//            .uri(URI.create(API_URL + API_KEY)) // fix URL
-//            .header("Content-Type", "application/json")
-//            .POST(HttpRequest.BodyPublishers.ofString(requestBody.toString()))
-//            .build();
-//
-//    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-//
-//    if (response.statusCode() != 200) {
-//        //throw new RuntimeException("API call failed: " + response.body());
-//    }
-//
-//    JSONObject jsonResponse = new JSONObject(response.body());
-//    String answer = jsonResponse.getJSONArray("candidates")
-//            .getJSONObject(0)
-//            .getJSONObject("content")
-//            .getJSONArray("parts")
-//            .getJSONObject(0)
-//            .getString("text");
-//
-//    // Optional: Giới hạn từ
-//    String[] words = answer.split("\\s+");
-//    if (words.length > 1000) {
-//        StringBuilder limitedAnswer = new StringBuilder();
-//        for (int i = 0; i < 1000; i++) {
-//            limitedAnswer.append(words[i]).append(" ");
-//        }
-//        return limitedAnswer.toString().trim() + "...";
-//    }
-//
-//    return answer;
-//}
-    
-    public String callGeminiAPI(String prompt) {
-    int maxRetries = 1;
-    int attempts = 0;
-
-    while (attempts <= maxRetries) {
+public String callGeminiAPI(String prompt) {
+    while (true) {
         try {
             HttpClient client = HttpClient.newHttpClient();
 
@@ -165,55 +114,121 @@ public class geminiService {
             requestBody.put("contents", contents);
 
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(API_URL + API_KEY)) // fix URL
+                    .uri(URI.create(API_URL + API_KEY))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(requestBody.toString()))
                     .build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-            if (response.statusCode() != 200) {
-                throw new RuntimeException("API call failed with status: " + response.statusCode());
-            }
+            if (response.statusCode() == 200) {
+                JSONObject jsonResponse = new JSONObject(response.body());
+                String answer = jsonResponse.getJSONArray("candidates")
+                        .getJSONObject(0)
+                        .getJSONObject("content")
+                        .getJSONArray("parts")
+                        .getJSONObject(0)
+                        .getString("text");
 
-            JSONObject jsonResponse = new JSONObject(response.body());
-            String answer = jsonResponse.getJSONArray("candidates")
-                    .getJSONObject(0)
-                    .getJSONObject("content")
-                    .getJSONArray("parts")
-                    .getJSONObject(0)
-                    .getString("text");
-
-            // Optional: Giới hạn từ
-            String[] words = answer.split("\\s+");
-            if (words.length > 100) {
-                StringBuilder limitedAnswer = new StringBuilder();
-                for (int i = 0; i < 100; i++) {
-                    limitedAnswer.append(words[i]).append(" ");
+                // Optional: Giới hạn từ
+                String[] words = answer.split("\\s+");
+                if (words.length > 100) {
+                    StringBuilder limitedAnswer = new StringBuilder();
+                    for (int i = 0; i < 100; i++) {
+                        limitedAnswer.append(words[i]).append(" ");
+                    }
+                    return limitedAnswer.toString().trim() + "...";
                 }
-                return limitedAnswer.toString().trim() + "...";
+
+                return answer;
             }
 
-            return answer;
+            // Nếu không phải 200, chờ rồi thử lại
+            //System.err.println("Lỗi gọi API (status " + response.statusCode() + "), thử lại...");
+            Thread.sleep(300);
 
         } catch (Exception ex) {
-            System.err.println("Lỗi gọi API lần " + (attempts + 1) + ": " + ex.getMessage());
-            attempts++;
-
-            if (attempts > maxRetries) {
-                return "Đã xảy ra lỗi khi kết nối tới AI. Vui lòng thử lại sau.";
-            }
-
+            //System.err.println("Lỗi gọi API: " + ex.getMessage() + " → Thử lại...");
             try {
-                Thread.sleep(1000); // Chờ 1 giây trước khi thử lại
-            } catch (InterruptedException e) {
+                Thread.sleep(300);
+            } catch (InterruptedException ie) {
                 Thread.currentThread().interrupt();
             }
         }
     }
-
-    return "Không xác định lỗi."; // fallback
 }
+
+    
+//    public String callGeminiAPI(String prompt) {
+//    int maxRetries = 1;
+//    int attempts = 0;
+//
+//    while (attempts <= maxRetries) {
+//        try {
+//            HttpClient client = HttpClient.newHttpClient();
+//
+//            JSONObject requestBody = new JSONObject();
+//            JSONArray contents = new JSONArray();
+//            JSONObject content = new JSONObject();
+//            JSONArray parts = new JSONArray();
+//            JSONObject part = new JSONObject();
+//
+//            part.put("text", prompt);
+//            parts.put(part);
+//            content.put("parts", parts);
+//            contents.put(content);
+//            requestBody.put("contents", contents);
+//
+//            HttpRequest request = HttpRequest.newBuilder()
+//                    .uri(URI.create(API_URL + API_KEY)) // fix URL
+//                    .header("Content-Type", "application/json")
+//                    .POST(HttpRequest.BodyPublishers.ofString(requestBody.toString()))
+//                    .build();
+//
+//            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+//
+//            if (response.statusCode() != 200) {
+//                throw new RuntimeException("API call failed with status: " + response.statusCode());
+//            }
+//
+//            JSONObject jsonResponse = new JSONObject(response.body());
+//            String answer = jsonResponse.getJSONArray("candidates")
+//                    .getJSONObject(0)
+//                    .getJSONObject("content")
+//                    .getJSONArray("parts")
+//                    .getJSONObject(0)
+//                    .getString("text");
+//
+//            // Optional: Giới hạn từ
+//            String[] words = answer.split("\\s+");
+//            if (words.length > 100) {
+//                StringBuilder limitedAnswer = new StringBuilder();
+//                for (int i = 0; i < 100; i++) {
+//                    limitedAnswer.append(words[i]).append(" ");
+//                }
+//                return limitedAnswer.toString().trim() + "...";
+//            }
+//
+//            return answer;
+//
+//        } catch (Exception ex) {
+//            System.err.println("Lỗi gọi API lần " + (attempts + 1) + ": " + ex.getMessage());
+//            attempts++;
+//
+//            if (attempts > maxRetries) {
+//                return "Đã xảy ra lỗi khi kết nối tới AI. Vui lòng thử lại sau.";
+//            }
+//
+//            try {
+//                Thread.sleep(1000); // Chờ 1 giây trước khi thử lại
+//            } catch (InterruptedException e) {
+//                Thread.currentThread().interrupt();
+//            }
+//        }
+//    }
+//
+//    return "Không xác định lỗi."; // fallback
+//}
 
 
 

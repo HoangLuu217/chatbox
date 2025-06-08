@@ -258,10 +258,10 @@
                     <img class="avatar" src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png" />
                     <div class="msg">
                         <div class="product-card">
-                            <img src="<%= product.getImageUrls()%>" alt="<%= product.getProductBase()%>" />
-                            <p><strong><%= product.getProductBase()%></strong></p>
+                            <img src="<%= product.getImageUrls()%>" alt="<%= product.getColor()%>" />
+                            <p><strong><%= product.getPrice()%></strong></p>
                             <p>Giá: <%= product.getPrice()%></p>
-                            <p>RAM: <%= product.getRam()%> - ROM: <%= product.getRom()%></p>
+                            <p>ROM: <%= product.getRom()%></p>
                             <button class="add-to-cart-btn" onclick="alert('Đã thêm sản phẩm <%= product.getVariantId()%> vào giỏ hàng!')">🛒 Thêm vào giỏ</button>
                         </div>
                     </div>
