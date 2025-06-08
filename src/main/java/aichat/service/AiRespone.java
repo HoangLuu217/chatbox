@@ -4,7 +4,6 @@
  */
 package aichat.service;
 
-import aichat.models.AITraining;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,6 +13,8 @@ import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import aichat.models.AITraining;
 
 /**
  *
@@ -221,47 +222,49 @@ public class AiRespone {
         }
     }
 
-    public HashMap<String, List<AITraining>> getProductRecommendation(String prompt) {
+    public HashMap<String, List<AITraining>> getProductRecommendation(String prompt, LinkedList<String> recentQuestions) {
         HashMap<String, List<AITraining>> result = new HashMap<>();
         List<AITraining> allProducts = aITrainingService.getAllTrainings();
-
+        
         // Phân tích các tiêu chí từ câu hỏi
         String brand = isRelatedToBrandNames(prompt);
         String name = isRelatedToName(prompt);
         String color = isRelatedToColor(prompt);
         String rom = isRelatedToRomValues(prompt);
         BigDecimal price = isRelatedToPrice(prompt);
-
+        
         // Lọc sản phẩm theo các tiêu chí
         List<AITraining> matchingProducts = allProducts.stream()
-                .filter(p -> brand.equals("không") || p.getBrandName().toLowerCase().contains(brand))
-                .filter(p -> name.equals("không") || p.getProductName().toLowerCase().contains(name))
-                .filter(p -> color.equals("không") || p.getColor().toLowerCase().contains(color))
-                .filter(p -> rom.equals("không") || p.getRom() != null && p.getRom().toString().contains(rom.replace("gb", "")))
-                .filter(p -> price == null || p.getPrice().compareTo(price) <= 0)
-                .collect(Collectors.toList());
+            .filter(p -> brand.equals("không") || p.getBrandName().toLowerCase().contains(brand))
+            .filter(p -> name.equals("không") || p.getProductName().toLowerCase().contains(name))
+            .filter(p -> color.equals("không") || p.getColor().toLowerCase().contains(color))
+            .filter(p -> rom.equals("không") || p.getRom() != null && p.getRom().toString().contains(rom.replace("gb", "")))
+            .filter(p -> price == null || p.getPrice().compareTo(price) <= 0)
+            .collect(Collectors.toList());
 
-        // Tạo câu tư vấn bằng AI
+        // Tạo câu tư vấn bằng AI với phong cách Điện Máy Xanh
         StringBuilder aiPrompt = new StringBuilder();
-        aiPrompt.append("Dựa trên thông tin sau:\n");
+        aiPrompt.append("Bạn là trợ lý ảo của Điện Máy Xanh. Hãy tư vấn cho khách hàng với phong cách thân thiện, chuyên nghiệp.\n\n");
+        
+        // Thêm context từ các câu hỏi trước
+        if (!recentQuestions.isEmpty()) {
+            aiPrompt.append("Lịch sử câu hỏi gần đây của khách hàng:\n");
+            for (String question : recentQuestions) {
+                aiPrompt.append("- ").append(question).append("\n");
+            }
+            aiPrompt.append("\n");
+        }
+        
+        aiPrompt.append("Câu hỏi hiện tại: ").append(prompt).append("\n\n");
+        aiPrompt.append("Thông tin sản phẩm:\n");
         aiPrompt.append("- Tiêu chí tìm kiếm: ");
-        if (!brand.equals("không")) {
-            aiPrompt.append("hãng ").append(brand).append(", ");
-        }
-        if (!name.equals("không")) {
-            aiPrompt.append("mẫu ").append(name).append(", ");
-        }
-        if (!color.equals("không")) {
-            aiPrompt.append("màu ").append(color).append(", ");
-        }
-        if (!rom.equals("không")) {
-            aiPrompt.append("dung lượng ").append(rom).append(", ");
-        }
-        if (price != null) {
-            aiPrompt.append("giá tầm ").append(price).append("đ, ");
-        }
+        if (!brand.equals("không")) aiPrompt.append("hãng ").append(brand).append(", ");
+        if (!name.equals("không")) aiPrompt.append("mẫu ").append(name).append(", ");
+        if (!color.equals("không")) aiPrompt.append("màu ").append(color).append(", ");
+        if (!rom.equals("không")) aiPrompt.append("dung lượng ").append(rom).append(", ");
+        if (price != null) aiPrompt.append("giá tầm ").append(price).append("đ, ");
         aiPrompt.append("\n");
-
+        
         aiPrompt.append("- Sản phẩm có sẵn: ");
         for (AITraining p : matchingProducts) {
             aiPrompt.append(p.getProductName())
@@ -269,18 +272,28 @@ public class AiRespone {
                     .append(" ").append(p.getRom()).append("GB")
                     .append(" giá ").append(p.getPrice()).append("đ, ");
         }
-        aiPrompt.append("\n");
-
-        aiPrompt.append("Hãy tư vấn cho khách hàng một cách thân thiện, nếu không có sản phẩm đúng yêu cầu thì đề xuất sản phẩm tương tự. ");
-        aiPrompt.append("Nếu có sản phẩm phù hợp thì giới thiệu chi tiết. ");
-        aiPrompt.append("Trả lời ngắn gọn, tự nhiên như đang nói chuyện.");
+        aiPrompt.append("\n\n");
+        
+        aiPrompt.append("Yêu cầu tư vấn:\n");
+        aiPrompt.append("1. Trả lời với phong cách thân thiện, chuyên nghiệp như trợ lý Điện Máy Xanh\n");
+        aiPrompt.append("2. Nếu không có sản phẩm đúng yêu cầu:\n");
+        aiPrompt.append("   - Thông báo lịch sự rằng không có sản phẩm\n");
+        aiPrompt.append("   - Đề xuất sản phẩm tương tự\n");
+        aiPrompt.append("   - Giải thích lý do đề xuất\n");
+        aiPrompt.append("3. Nếu có sản phẩm phù hợp:\n");
+        aiPrompt.append("   - Giới thiệu chi tiết sản phẩm\n");
+        aiPrompt.append("   - Nêu ưu điểm nổi bật\n");
+        aiPrompt.append("   - Đề xuất thêm các lựa chọn khác\n");
+        aiPrompt.append("4. Kết thúc bằng câu hỏi mở để tiếp tục tư vấn\n");
+        aiPrompt.append("5. Sử dụng emoji phù hợp để tăng tính thân thiện\n");
+        aiPrompt.append("6. Trả lời ngắn gọn, tự nhiên như đang nói chuyện");
 
         try {
             String aiResponse = chat.callGeminiAPI(aiPrompt.toString());
             result.put(aiResponse, matchingProducts);
         } catch (Exception ex) {
             Logger.getLogger(AiRespone.class.getName()).log(Level.SEVERE, null, ex);
-            result.put("Xin lỗi, tôi không thể tư vấn lúc này. Vui lòng thử lại sau.", new ArrayList<>());
+            result.put("Xin lỗi anh/chị, em không thể tư vấn lúc này. Anh/chị vui lòng thử lại sau ạ. 😊", new ArrayList<>());
         }
 
         return result;
@@ -304,48 +317,52 @@ public class AiRespone {
     }
 
     public static void main(String[] args) {
-//        Scanner scanner = new Scanner(System.in);
-//
-//        AiRespone ai = new AiRespone();
-//        while (true) {
-//            System.out.print("ban muon mua gi (go 'exit' de thoat): ");
-//            String input = scanner.nextLine();
-//            String ask = ai.saveRecentQuestion(input).toString();
-//            System.out.println(ask);
-//            //ai.checkanswer(ask);
-//            ai.answer(ask);
-//            if (input.equalsIgnoreCase("exit")) {
-//                System.out.println("Tạm biệt nhé!");
-//                break;
-//            }
-//        }
-
         Scanner scanner = new Scanner(System.in);
         AiRespone ai = new AiRespone();
-
-        System.out.println("=== Chuong trinh tu van san pham ===");
-        System.out.println("Nhap 'exit' de thoat");
+        LinkedList<String> recentQuestions = new LinkedList<>();
+        
+        System.out.println("=== Trợ lý ảo Điện Máy Xanh ===");
+        System.out.println("Nhập 'exit' để thoát");
+        System.out.println("Nhập 'history' để xem lịch sử câu hỏi");
         System.out.println("-----------------------------------");
-
+        
         while (true) {
-            System.out.print("\nBan muon tim san pham gi? ");
+            System.out.print("\nAnh/chị cần tư vấn gì ạ? ");
             String input = scanner.nextLine();
-            String ask = ai.saveRecentQuestion(input).toString();
-
+            
             if (input.equalsIgnoreCase("exit")) {
-                System.out.println("Tam biet nhe!");
+                System.out.println("Cảm ơn anh/chị đã sử dụng dịch vụ tư vấn của Điện Máy Xanh. Chúc anh/chị một ngày tốt lành! ��");
                 break;
             }
-
-            // Xu ly cau hoi va hien thi ket qua
-            HashMap<String, List<AITraining>> result = ai.getProductRecommendation(ask);
-            System.out.println("\nTu van: " + result.keySet().iterator().next());
-            System.out.println("\nSan pham phu hop:");
-            result.values().iterator().next().forEach(p
-                    -> System.out.println("- " + p.getProductName() + " | Mau: " + p.getColor() + " | ROM: " + p.getRom() + "GB | Gia: " + p.getPrice() + "d")
-            );
+            
+            if (input.equalsIgnoreCase("history")) {
+                System.out.println("\nLịch sử câu hỏi gần đây:");
+                for (String question : recentQuestions) {
+                    System.out.println("- " + question);
+                }
+                continue;
+            }
+            
+            // Lưu câu hỏi mới
+            if (recentQuestions.size() >= 3) {
+                recentQuestions.removeFirst();
+            }
+            recentQuestions.addLast(input);
+            
+            // Tư vấn với context
+            HashMap<String, List<AITraining>> result = ai.getProductRecommendation(input, recentQuestions);
+            System.out.println("\n" + result.keySet().iterator().next());
+            
+            List<AITraining> products = result.values().iterator().next();
+            if (!products.isEmpty()) {
+                System.out.println("\nSản phẩm phù hợp:");
+                products.forEach(p -> 
+                    System.out.println("- " + p.getProductName() + " | Màu: " + p.getColor() + 
+                        " | ROM: " + p.getRom() + "GB | Giá: " + p.getPrice() + "đ")
+                );
+            }
         }
-
+        
         scanner.close();
     }
 }
